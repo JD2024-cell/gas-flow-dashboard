@@ -505,9 +505,8 @@ def main():
                                             x=facility_subset['Gas Date'],
                                             y=facility_subset[metric_to_plot],
                                             name=facility,
-                                            mode='lines+markers',
-                                            line=dict(color=colors[i % len(colors)], width=2),
-                                            marker=dict(size=6)
+                                            mode='lines',
+                                            line=dict(color=colors[i % len(colors)], width=2)
                                         )
                                     )
                         
@@ -607,9 +606,8 @@ def main():
                                             x=facility_subset['Gas Date'],
                                             y=facility_subset['Transfer In'],  # Always show Transfer In for NGP
                                             name=f"{facility}",
-                                            mode='lines+markers',
-                                            line=dict(color='orange', width=3),
-                                            marker=dict(size=8, symbol='diamond')
+                                            mode='lines',
+                                            line=dict(color='orange', width=3)
                                         )
                                     )
                         
