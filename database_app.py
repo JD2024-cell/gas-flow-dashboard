@@ -440,7 +440,7 @@ def main():
                     }).reset_index()
                     
                     # Chart options
-                    col1, col2 = st.columns(2)
+                    col1, col2, col3 = st.columns(3)
                     with col1:
                         metric_to_plot = st.selectbox(
                             "Select Metric",
@@ -451,6 +451,39 @@ def main():
                     with col2:
                         show_individual = st.checkbox("Show Individual Lines", value=True)
                         show_total = st.checkbox("Show Combined Total", value=False)
+                    
+                    with col3:
+                        auto_y_range = st.checkbox("Auto Y-axis Range", value=True)
+                    
+                    # Y-axis range controls
+                    if not auto_y_range:
+                        st.write("**Y-axis Range Settings:**")
+                        y_col1, y_col2 = st.columns(2)
+                        
+                        # Get data range for reference
+                        all_values = daily_facility_data[metric_to_plot].dropna()
+                        if len(all_values) > 0:
+                            data_min = float(all_values.min())
+                            data_max = float(all_values.max())
+                            data_range = data_max - data_min
+                            
+                            with y_col1:
+                                y_min = st.number_input(
+                                    "Y-axis Minimum", 
+                                    value=float(max(0, data_min - data_range * 0.1)),
+                                    step=1.0,
+                                    format="%.2f"
+                                )
+                            
+                            with y_col2:
+                                y_max = st.number_input(
+                                    "Y-axis Maximum", 
+                                    value=float(data_max + data_range * 0.1),
+                                    step=1.0,
+                                    format="%.2f"
+                                )
+                        else:
+                            y_min, y_max = 0, 100
                     
                     # Separate facilities into two groups: NGP and Others
                     ngp_facilities = [f for f in selected_facilities if 'NGP' in f.upper()]
@@ -493,6 +526,10 @@ def main():
                             )
                         
                         # Update layout for chart 1
+                        y_axis_config = dict(fixedrange=False)
+                        if not auto_y_range and 'y_min' in locals() and 'y_max' in locals():
+                            y_axis_config['range'] = [y_min, y_max]
+                        
                         fig1.update_layout(
                             title=f'{metric_to_plot} Over Time - Mereenie, Palm Valley & Yelcherr',
                             xaxis_title='Date',
@@ -505,7 +542,12 @@ def main():
                                 y=1.02,
                                 xanchor="right",
                                 x=1
-                            )
+                            ),
+                            xaxis=dict(
+                                rangeslider=dict(visible=True),
+                                type="date"
+                            ),
+                            yaxis=y_axis_config
                         )
                         
                         # Add grid and styling
@@ -517,6 +559,43 @@ def main():
                     # Chart 2: NGP Transfer In (separate chart)
                     if ngp_facilities:
                         st.subheader("🔄 NGP Transfer In Analysis")
+                        
+                        # NGP Y-axis range controls
+                        ngp_auto_y = st.checkbox("Auto Y-axis Range (NGP)", value=True, key="ngp_auto_y")
+                        
+                        if not ngp_auto_y:
+                            st.write("**NGP Y-axis Range Settings:**")
+                            ngp_col1, ngp_col2 = st.columns(2)
+                            
+                            # Get NGP Transfer In data range
+                            ngp_data = daily_facility_data[daily_facility_data['Facility Name'].isin(ngp_facilities)]
+                            ngp_values = ngp_data['Transfer In'].dropna()
+                            
+                            if len(ngp_values) > 0:
+                                ngp_min = float(ngp_values.min())
+                                ngp_max = float(ngp_values.max())
+                                ngp_range = ngp_max - ngp_min
+                                
+                                with ngp_col1:
+                                    ngp_y_min = st.number_input(
+                                        "NGP Y-axis Minimum", 
+                                        value=float(max(0, ngp_min - ngp_range * 0.1)),
+                                        step=1.0,
+                                        format="%.2f",
+                                        key="ngp_y_min"
+                                    )
+                                
+                                with ngp_col2:
+                                    ngp_y_max = st.number_input(
+                                        "NGP Y-axis Maximum", 
+                                        value=float(ngp_max + ngp_range * 0.1),
+                                        step=1.0,
+                                        format="%.2f",
+                                        key="ngp_y_max"
+                                    )
+                            else:
+                                ngp_y_min, ngp_y_max = 0, 100
+                        
                         fig2 = go.Figure()
                         
                         if show_individual:
@@ -535,6 +614,10 @@ def main():
                                     )
                         
                         # Update layout for NGP chart
+                        ngp_y_axis_config = dict(fixedrange=False)
+                        if not ngp_auto_y and 'ngp_y_min' in locals() and 'ngp_y_max' in locals():
+                            ngp_y_axis_config['range'] = [ngp_y_min, ngp_y_max]
+                        
                         fig2.update_layout(
                             title='NGP Transfer In Over Time',
                             xaxis_title='Date',
@@ -547,7 +630,12 @@ def main():
                                 y=1.02,
                                 xanchor="right",
                                 x=1
-                            )
+                            ),
+                            xaxis=dict(
+                                rangeslider=dict(visible=True),
+                                type="date"
+                            ),
+                            yaxis=ngp_y_axis_config
                         )
                         
                         # Add grid and styling
