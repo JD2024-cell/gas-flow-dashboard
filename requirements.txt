@@ -1,16 +1,6 @@
-# Core libraries
+pip
+setuptools
+wheel
 streamlit==1.35.0
-pandas==2.1.4
-numpy==1.26.4
-plotly==5.21.0
-requests==2.32.3
-
-# For handling zip files and streams
-pyzipper==0.3.6
-
-# Database (PostgreSQL support)
-SQLAlchemy==2.0.30
-psycopg2-binary==2.9.9
-
-# Optional extras (used for string or time parsing, I/O)
-python-dateutil==2.9.0.post0
+pandas==2.0.3
+numpy
